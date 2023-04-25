@@ -63,7 +63,7 @@ public class Utils {
                 Method meth=(Method)m;
                 map.setMethod(meth.getName());
                 Annotation annote=listeMeth.get(meth);
-                String value=annote.getClass().getMethod("value").invoke(annote).toString();
+                String value=annote.getClass().getMethod("url").invoke(annote).toString();
                 listeUrl.put(value, map);
             }
         }
