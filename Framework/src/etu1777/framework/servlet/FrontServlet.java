@@ -40,6 +40,9 @@ public class FrontServlet extends HttpServlet{
             Class<? extends Object > classe=loader.loadClass(mappingUrls.get(url).getClassName());
             Object objet=classe.getConstructor().newInstance();
             ModelView view=(ModelView)(classe.getMethod(mappingUrls.get(url).getMethod()).invoke(objet));
+            for(Map.Entry<String, Object> entry:view.getData().entrySet()){
+                req.setAttribute(entry.getKey(), entry.getValue());
+            }
             RequestDispatcher dispat=req.getRequestDispatcher(view.getView());
             dispat.forward(req, res);
         }else{
