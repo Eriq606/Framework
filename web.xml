@@ -7,6 +7,10 @@
 <servlet> 
     <servlet-name>FrontServlet</servlet-name> 
     <servlet-class>etu1777.framework.servlet.FrontServlet</servlet-class>
+    <init-param>
+        <param-name>classpath</param-name>
+        <param-value>webapps/testWeb/WEB-INF/classes</param-value>
+    </init-param>
 </servlet>
 <servlet-mapping> 
     <servlet-name>FrontServlet</servlet-name>
