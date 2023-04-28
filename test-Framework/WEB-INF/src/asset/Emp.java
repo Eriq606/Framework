@@ -11,7 +11,7 @@ public class Emp {
     public int getId() {
         return id;
     }
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     public void setId(String id){
@@ -36,6 +36,15 @@ public class Emp {
         l.add(new Emp(1, "Jean"));
         l.add(new Emp(2, "Marie"));
         l.add(new Emp(3, "Jules"));
+        model.addItem("lst", l);
+        return model;
+    }
+    @urlpattern(url="emp-save")
+    public ModelView save(){
+        ModelView model=new ModelView();
+        model.setView("hello.jsp");
+        LinkedList<Emp> l=new LinkedList<>();
+        l.add(this);
         model.addItem("lst", l);
         return model;
     }

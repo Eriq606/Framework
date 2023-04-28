@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 public class Utils {
     public String getCoreURL(String url){
@@ -16,6 +17,51 @@ public class Utils {
         }
         rep+=newUrl[newUrl.length-1];
         return rep;
+    }
+    public String majStart(String n){
+        String nouveau=n.replaceFirst(String.valueOf(n.charAt(0)), String.valueOf(n.charAt(0)).toUpperCase());
+        return nouveau;
+    }
+    @SuppressWarnings("rawtypes")
+    public Class getClassFromName(String type) throws ClassNotFoundException{
+        if(type.equals("int")){
+            return Integer.class;
+        }else if(type.equals("char")){
+            return Character.class;
+        }else if(type.equals("double")){
+            return Double.class;
+        }else if(type.equals("boolean")){
+            return Boolean.class;
+        }else if(type.equals("byte")){
+            return Byte.class;
+        }else if(type.equals("long")){
+            return Long.class;
+        }else if(type.equals("short")){
+            return Short.class;
+        }else if(type.equals("float")){
+            return Float.class;
+        }
+        return Class.forName(type);
+    }
+    @SuppressWarnings("rawtypes")
+    public String getParseMethod(Class classe){
+        String rep="parse";
+        if(classe.getSimpleName().equals("Integer")){
+            rep+="Int";
+        }else{
+            rep+=classe.getSimpleName();
+        }
+        return rep;
+    }
+    @SuppressWarnings("rawtypes")
+    public Method getMethodeByAnnotation(String annote, String valueAnnote, Class classe) throws Exception{
+        HashMap<Method, Annotation> methodes=getAllAnnotedMethods(annote, classe);
+        for(Map.Entry<Method,Annotation> entry:methodes.entrySet()){
+            if(entry.getValue().annotationType().getMethod("url").invoke(entry.getValue()).equals(valueAnnote)){
+                return entry.getKey();
+            }
+        }
+        return null;
     }
     @SuppressWarnings("rawtypes")
     public LinkedList<Class> getAllPackagesClasses(String path, String packageName) throws ClassNotFoundException{
