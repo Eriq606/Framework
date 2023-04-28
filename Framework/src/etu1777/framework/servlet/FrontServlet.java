@@ -2,6 +2,8 @@ package etu1777.framework.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +12,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.beanutils.converters.ClassConverter;
 
 import etu1777.framework.Mapping;
 import etu1777.framework.ModelView;
@@ -39,6 +43,13 @@ public class FrontServlet extends HttpServlet{
             ClassLoader loader=Thread.currentThread().getContextClassLoader();
             Class<? extends Object > classe=loader.loadClass(mappingUrls.get(url).getClassName());
             Object objet=classe.getConstructor().newInstance();
+            if(req.getParameterNames().hasMoreElements()){
+                ClassConverter convert=new ClassConverter();
+                Field[] fields=classe.getDeclaredFields();
+                for(Field f:fields){
+                    classe.getMethod("set"+utils.majStart(f.getName()), f.getType()).invoke(objet, convert.convert(f.getType(), req.getParameter(f.getName())));
+                }
+            }
             ModelView view=(ModelView)(classe.getMethod(mappingUrls.get(url).getMethod()).invoke(objet));
             for(Map.Entry<String, Object> entry:view.getData().entrySet()){
                 req.setAttribute(entry.getKey(), entry.getValue());

@@ -17,6 +17,10 @@ public class Utils {
         rep+=newUrl[newUrl.length-1];
         return rep;
     }
+    public String majStart(String n){
+        String nouveau=n.replaceFirst(String.valueOf(n.charAt(0)), String.valueOf(n.charAt(0)).toUpperCase());
+        return nouveau;
+    }
     @SuppressWarnings("rawtypes")
     public LinkedList<Class> getAllPackagesClasses(String path, String packageName) throws ClassNotFoundException{
         File first=new File(path);

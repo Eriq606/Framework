@@ -12,5 +12,10 @@
         <li><% out.print(e.getId()+": "+e.getNom()); %></li>
     <% } %>
     </ul>
+    <form action="emp-save" method="post">
+        <p>Nom: <input type="text" name="nom"><p>
+        <p>ID: <input type="number" name="id"></p>
+        <p><input type="submit" value="Valider"></p>
+    </form>
 </body>
 </html>
