@@ -9,7 +9,7 @@
     <ul>
     <% LinkedList<Emp> lst=(LinkedList<Emp>)request.getAttribute("lst");
     for(Emp e:lst){ %>
-        <li><% out.print(e.getId()+": "+e.getNom()); %></li>
+        <li><a href="find-by-id?id=<%= e.getId() %>"><% out.print(e.getId()+": "+e.getNom()); %></a></li>
     <% } %>
     </ul>
     <form action="emp-save" method="post">
