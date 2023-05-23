@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Employee</title>
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
 </head>
 <body>
     <h1>Hello</h1>
@@ -9,10 +10,10 @@
     <ul>
     <% LinkedList<Emp> lst=(LinkedList<Emp>)request.getAttribute("lst");
     for(Emp e:lst){ %>
-        <li><a href="find-by-id?id=<%= e.getId() %>"><% out.print(e.getId()+": "+e.getNom()); %></a></li>
+        <li><a href="find-by-id.dodo?id=<%= e.getId() %>&nom=<%= e.getNom() %>"><% out.print(e.getId()+": "+e.getNom()); %></a></li>
     <% } %>
     </ul>
-    <form action="emp-save" method="post">
+    <form action="emp-save.dodo" method="post">
         <p>Nom: <input type="text" name="nom"><p>
         <p>ID: <input type="number" name="id"></p>
         <p><input type="submit" value="Valider"></p>
