@@ -18,5 +18,6 @@
         <p>ID: <input type="number" name="id"></p>
         <p><input type="submit" value="Valider"></p>
     </form>
+    <p><a href="">Clients</a></p>
 </body>
 </html>
