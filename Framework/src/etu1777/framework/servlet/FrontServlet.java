@@ -1,26 +1,35 @@
 package etu1777.framework.servlet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
+import etu1777.framework.FileUpload;
 import etu1777.framework.Mapping;
 import etu1777.framework.ModelView;
 import etu1777.framework.Utils;
 
+@WebServlet("/upload")
+@MultipartConfig
 public class FrontServlet extends HttpServlet{
     HashMap<String, Mapping> mappingUrls;
     public void init(){
@@ -47,21 +56,38 @@ public class FrontServlet extends HttpServlet{
             Object objet=classe.getConstructor().newInstance();
             Field[] fields=classe.getDeclaredFields();
             for(Field f:fields){
+                Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());
-                if(param!=null){
-                    Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());
-                    Method setter=classe.getMethod("set"+utils.majStart(f.getName()), typeClass);
-                    if(typeClass.getSimpleName().equals("Date")){
-                        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd");
-                        Date d=format.parse(param);
-                        setter.invoke(objet, d);
-                    }
-                    else if(f.getType().getSimpleName().equals("String")==false){
+                Method setter=classe.getMethod("set"+utils.majStart(f.getName()), typeClass);
+                if(param!=null){    
+                    if(f.getType().getSimpleName().equals("String")==false){
                         String parse=utils.getParseMethod(typeClass);
                         Method parser=typeClass.getMethod(parse, String.class);
                         setter.invoke(objet, parser.invoke(typeClass, param));
                     }else{
                         setter.invoke(objet, param);
+                    }
+                }
+                if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
+                    Part filePart=req.getPart(f.getName());
+                    if(filePart!=null&&typeClass.equals(FileUpload.class)){
+                        InputStream fileData=filePart.getInputStream();
+                        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+                        try{
+                            byte[] byteArray=new byte[8192];
+                            int byteRead;
+                            while((byteRead=fileData.read(byteArray))!=-1){
+                                byteOut.write(byteArray, 0, byteRead);
+                            }
+                            byte[] file=byteOut.toByteArray();
+                            FileUpload uploaded=new FileUpload();
+                            uploaded.setName(filePart.getSubmittedFileName());
+                            uploaded.setFile(file);
+                            setter.invoke(objet, uploaded);
+                        }finally{
+                            fileData.close();
+                            byteOut.close();
+                        }
                     }
                 }
             }
@@ -79,17 +105,31 @@ public class FrontServlet extends HttpServlet{
                             String req_param=req.getParameter(a.annotationType().getMethod("value").invoke(a).toString());
                             if(req_param!=null){
                                 Class class_param=utils.getClassFromName(params[i].getType().getName());
-                                if(class_param.getSimpleName().equals("Date")){
-                                    SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd");
-                                    Date d=format.parse(req_param);
-                                    listParams[i]=d;
-                                }
-                                else if(class_param.getSimpleName().equals("String")==false){
+                                if(class_param.getSimpleName().equals("String")==false){
                                     String parse=utils.getParseMethod(class_param);
                                     Method parser=class_param.getMethod(parse, String.class);
                                     listParams[i]=parser.invoke(class_param, req_param);
                                 }else{
                                     listParams[i]=req_param;
+                                }
+                            }
+                            if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
+                                Part filePart=req.getPart(a.annotationType().getMethod("value").invoke(a).toString());
+                                if(filePart!=null){
+                                    InputStream fileData=filePart.getInputStream();
+                                    ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+                                    byte[] byteArray=new byte[8192];
+                                    int byteRead;
+                                    while((byteRead=fileData.read(byteArray))!=-1){
+                                        byteOut.write(byteArray, 0, byteRead);
+                                    }
+                                    byte[] file=byteOut.toByteArray();
+                                    fileData.close();
+                                    byteOut.close();
+                                    FileUpload uploaded=new FileUpload();
+                                    uploaded.setName(filePart.getSubmittedFileName());
+                                    uploaded.setFile(file);
+                                    listParams[i]=uploaded;
                                 }
                             }
                             break;
