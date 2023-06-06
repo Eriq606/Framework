@@ -7,6 +7,7 @@ import etu1777.framework.ModelView;
 import etu1777.framework.annotations.annote_param;
 import etu1777.framework.annotations.urlpattern;
 
+@scope("singleton")
 public class Emp {
     private int id;
     private String nom;

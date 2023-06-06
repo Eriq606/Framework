@@ -9,7 +9,7 @@
         <servlet-class>etu1777.framework.servlet.FrontServlet</servlet-class>
         <init-param>
             <param-name>classpath</param-name>
-            <param-value>E:/Eriq_RohWeltall/apache-tomcat-8/webapps/test-Framework/WEB-INF/classes</param-value>
+            <param-value>/var/lib/tomcat9/webapps/test-Framework/WEB-INF/classes</param-value>
         </init-param>
     </servlet>
     <servlet-mapping> 

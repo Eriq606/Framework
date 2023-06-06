@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import etu1777.framework.annotations.scope;
+
 public class Utils {
     public String getCoreURL(String url){
         String[] newUrl=url.split("/");
@@ -115,5 +117,36 @@ public class Utils {
             }
         }
         return listeUrl;
+    }
+    public HashMap<String, Object> getAllSingletonClass(String path, String singletonAnnote) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+        LinkedList<Class> listeClass=getAllPackagesClasses(path, "");
+        HashMap<String, Object> singletons=new HashMap<>();
+        for(Class c:listeClass){
+            Annotation annotes=c.getAnnotation(scope.class);
+            if(annotes!=null){
+                String scope=annotes.annotationType().getMethod("value").invoke(annotes).toString();
+                if(scope.equals(singletonAnnote)){
+                    singletons.put(c.getName(), null);
+                }
+            }
+        }
+        return singletons;
+    }
+    public Object instanceObjectSingleton(HashMap<String, Object> singletons, String classeName, Class classe) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException{
+        Object obj=null;
+        boolean isSingletonClass=singletons.containsKey(classeName);
+        if(isSingletonClass){
+            obj=singletons.get(classeName);
+            if(obj==null){
+                obj=classe.getConstructors()[0].newInstance();
+            }
+        }else{
+            obj=classe.getConstructors()[0].newInstance();
+        }
+        Field[] champs=classe.getDeclaredFields();
+        for(Field f:champs){
+            classe.getMethod("set"+majStart(f.getName()), f.getType()).invoke(obj, null);
+        }
+        return obj;
     }
 }
