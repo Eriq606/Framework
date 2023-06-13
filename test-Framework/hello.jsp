@@ -18,6 +18,6 @@
         <p>ID: <input type="number" name="id"></p>
         <p><input type="submit" value="Valider"></p>
     </form>
-    <p><a href="">Clients</a></p>
+    <p><a href="index.jsp">Clients</a></p>
 </body>
 </html>

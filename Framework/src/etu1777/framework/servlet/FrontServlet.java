@@ -8,9 +8,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,11 +29,14 @@ import etu1777.framework.Utils;
 @MultipartConfig
 public class FrontServlet extends HttpServlet{
     HashMap<String, Mapping> mappingUrls;
+    HashMap<String, Object> singletonClass;
     public void init(){
         Utils utils=new Utils();
         try {
             String classpath=getInitParameter("classpath");
+            String singletonAnnote="singleton";
             mappingUrls=utils.getAllURLMapping(classpath);
+            singletonClass=utils.getAllSingletonClass(classpath, singletonAnnote);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -47,13 +47,17 @@ public class FrontServlet extends HttpServlet{
         Utils utils=new Utils();
         url=utils.getCoreURL(url);
         PrintWriter writer=res.getWriter();
-        for(Map.Entry<String, Mapping> entry:mappingUrls.entrySet()){
-            writer.println(entry.getKey()+": "+entry.getValue());
+        // for(Map.Entry<String, Mapping> entry:mappingUrls.entrySet()){
+        //     writer.println(entry.getKey()+": "+entry.getValue());
+        // }
+        for(Map.Entry<String, Object> entry:singletonClass.entrySet()){
+            writer.println(entry.getKey());
         }
         if(mappingUrls.containsKey(url)){
             ClassLoader loader=Thread.currentThread().getContextClassLoader();
-            Class<? extends Object > classe=loader.loadClass(mappingUrls.get(url).getClassName());
-            Object objet=classe.getConstructor().newInstance();
+            String className=mappingUrls.get(url).getClassName();
+            Class<? extends Object > classe=loader.loadClass(className);
+            Object objet=utils.instanceObjectSingleton(singletonClass, className, classe);
             Field[] fields=classe.getDeclaredFields();
             for(Field f:fields){
                 Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());

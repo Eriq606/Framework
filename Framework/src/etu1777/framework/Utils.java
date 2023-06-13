@@ -2,12 +2,15 @@ package etu1777.framework;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
+import etu1777.framework.annotations.scope;
 
 public class Utils {
     public String getCoreURL(String url){
@@ -115,5 +118,62 @@ public class Utils {
             }
         }
         return listeUrl;
+    }
+    public HashMap<String, Object> getAllSingletonClass(String path, String singletonAnnote) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+        LinkedList<Class> listeClass=getAllPackagesClasses(path, "");
+        HashMap<String, Object> singletons=new HashMap<>();
+        for(Class c:listeClass){
+            Annotation annotes=c.getAnnotation(scope.class);
+            if(annotes!=null){
+                String scope=annotes.annotationType().getMethod("value").invoke(annotes).toString();
+                if(scope.equals(singletonAnnote)){
+                    singletons.put(c.getName(), null);
+                }
+            }
+        }
+        return singletons;
+    }
+    public Object getDefaultValue(Field field){
+        if(field.getType().getSimpleName().equals("int")||field.getType().getSimpleName().equals("float")||
+            field.getType().getSimpleName().equals("double")||field.getType().getSimpleName().equals("long")||
+            field.getType().getSimpleName().equals("short")){
+            return 0;
+        }else if(field.getType().getSimpleName().equals("boolean")){
+            return false;
+        }else if(field.getType().getSimpleName().equals("char")){
+            return ' ';
+        }
+        return null;
+    }
+    public Constructor getEmptyConstructor(Class classe){
+        Constructor[] constructors=classe.getConstructors();
+        for(Constructor c:constructors){
+            if(c.getParameterCount()==0){
+                return c;
+            }
+        }
+        return constructors[0];
+    }
+    public void resetAttributes(Object obj, Class classe) throws IllegalArgumentException, IllegalAccessException{
+        Field[] champs=classe.getDeclaredFields();
+        for(Field f:champs){
+            f.setAccessible(true);
+            f.set(obj, getDefaultValue(f));
+        }
+    }
+    public Object instanceObjectSingleton(HashMap<String, Object> singletons, String classeName, Class classe) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException{
+        Object obj=null;
+        boolean isSingletonClass=singletons.containsKey(classeName);
+        if(isSingletonClass){
+            obj=singletons.get(classeName);
+            if(obj==null){
+                singletons.put(classeName, getEmptyConstructor(classe).newInstance());
+                obj=singletons.get(classeName);
+            }
+            resetAttributes(obj,classe);
+        }else{
+            obj=getEmptyConstructor(classe).newInstance();
+        }
+        return obj;
     }
 }

@@ -5,8 +5,10 @@ import java.text.ParseException;
 
 import etu1777.framework.ModelView;
 import etu1777.framework.annotations.annote_param;
+import etu1777.framework.annotations.scope;
 import etu1777.framework.annotations.urlpattern;
 
+@scope("singleton")
 public class Emp {
     private int id;
     private String nom;
@@ -15,9 +17,6 @@ public class Emp {
     }
     public void setId(Integer id) {
         this.id = id;
-    }
-    public void setId(String id){
-        setId(Integer.parseInt(id));
     }
     public String getNom() {
         return nom;
