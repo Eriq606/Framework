@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
+import etu1777.framework.annotations.auth;
 import etu1777.framework.annotations.scope;
 
 public class Utils {
@@ -175,5 +178,12 @@ public class Utils {
             obj=getEmptyConstructor(classe).newInstance();
         }
         return obj;
+    }
+    public boolean checkMethod(Method methode, HttpSession session, String role) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+        Annotation annote=methode.getAnnotation(auth.class);
+        if(annote==null||annote.annotationType().getMethod("admin").invoke(annote).equals(session.getAttribute(role))){
+            return true;
+        }
+        return false;
     }
 }

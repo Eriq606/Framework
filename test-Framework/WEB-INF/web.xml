@@ -11,6 +11,14 @@
             <param-name>classpath</param-name>
             <param-value>E:/Eriq_RohWeltall/apache-tomcat-8/webapps/test-Framework/WEB-INF/classes</param-value>
         </init-param>
+        <init-param>
+            <param-name>isConnected</param-name>
+            <param-value>estConnecte</param-value>
+        </init-param>
+        <init-param>
+            <param-name>role</param-name>
+            <param-value>role</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping> 
         <servlet-name>FrontServlet</servlet-name>
