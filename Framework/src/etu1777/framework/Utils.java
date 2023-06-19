@@ -1,11 +1,15 @@
 package etu1777.framework;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -185,5 +189,43 @@ public class Utils {
             return true;
         }
         return false;
+    }
+    public void setFieldValue(Field f, Class typeClass, Method setter, Object objet, String param) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        if(param!=null){    
+            if(f.getType().getSimpleName().equals("String")==false){
+                String parse=getParseMethod(typeClass);
+                Method parser=typeClass.getMethod(parse, String.class);
+                setter.invoke(objet, parser.invoke(typeClass, param));
+            }else{
+                setter.invoke(objet, param);
+            }
+        }
+    }
+    public FileUpload setFileUploadFieldValue(Object objet, InputStream fileData, String fileName) throws IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+        try{
+            byte[] byteArray=new byte[8192];
+            int byteRead;
+            while((byteRead=fileData.read(byteArray))!=-1){
+                byteOut.write(byteArray, 0, byteRead);
+            }
+            byte[] file=byteOut.toByteArray();
+            FileUpload uploaded=new FileUpload();
+            uploaded.setName(fileName);
+            uploaded.setFile(file);
+            return uploaded;
+        }finally{
+            byteOut.close();
+        }
+    }
+    public void addMethodParameterValue(Parameter params, Object[] listParams, int i, String req_param) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        Class class_param=getClassFromName(params.getType().getName());
+        if(class_param.getSimpleName().equals("String")==false){
+            String parse=getParseMethod(class_param);
+            Method parser=class_param.getMethod(parse, String.class);
+            listParams[i]=parser.invoke(class_param, req_param);
+        }else{
+            listParams[i]=req_param;
+        }
     }
 }

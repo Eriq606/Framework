@@ -68,34 +68,17 @@ public class FrontServlet extends HttpServlet{
                 Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());
                 Method setter=classe.getMethod("set"+utils.majStart(f.getName()), typeClass);
-                if(param!=null){    
-                    if(f.getType().getSimpleName().equals("String")==false){
-                        String parse=utils.getParseMethod(typeClass);
-                        Method parser=typeClass.getMethod(parse, String.class);
-                        setter.invoke(objet, parser.invoke(typeClass, param));
-                    }else{
-                        setter.invoke(objet, param);
-                    }
-                }
+                utils.setFieldValue(f, typeClass, setter, objet, param);
                 if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
                     Part filePart=req.getPart(f.getName());
                     if(filePart!=null&&typeClass.equals(FileUpload.class)){
                         InputStream fileData=filePart.getInputStream();
-                        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+                        String fileName=filePart.getSubmittedFileName();
                         try{
-                            byte[] byteArray=new byte[8192];
-                            int byteRead;
-                            while((byteRead=fileData.read(byteArray))!=-1){
-                                byteOut.write(byteArray, 0, byteRead);
-                            }
-                            byte[] file=byteOut.toByteArray();
-                            FileUpload uploaded=new FileUpload();
-                            uploaded.setName(filePart.getSubmittedFileName());
-                            uploaded.setFile(file);
-                            setter.invoke(objet, uploaded);
+                            FileUpload file=utils.setFileUploadFieldValue(objet, fileData, fileName);
+                            setter.invoke(objet, file);
                         }finally{
                             fileData.close();
-                            byteOut.close();
                         }
                     }
                 }
@@ -118,32 +101,19 @@ public class FrontServlet extends HttpServlet{
                             if(a.annotationType().getSimpleName().equals("annote_param")){
                                 String req_param=req.getParameter(a.annotationType().getMethod("value").invoke(a).toString());
                                 if(req_param!=null){
-                                    Class class_param=utils.getClassFromName(params[i].getType().getName());
-                                    if(class_param.getSimpleName().equals("String")==false){
-                                        String parse=utils.getParseMethod(class_param);
-                                        Method parser=class_param.getMethod(parse, String.class);
-                                        listParams[i]=parser.invoke(class_param, req_param);
-                                    }else{
-                                        listParams[i]=req_param;
-                                    }
+                                    utils.addMethodParameterValue(params[i], listParams, i, req_param);
                                 }
                                 if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
                                     Part filePart=req.getPart(a.annotationType().getMethod("value").invoke(a).toString());
                                     if(filePart!=null){
                                         InputStream fileData=filePart.getInputStream();
-                                        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
-                                        byte[] byteArray=new byte[8192];
-                                        int byteRead;
-                                        while((byteRead=fileData.read(byteArray))!=-1){
-                                            byteOut.write(byteArray, 0, byteRead);
+                                        String fileName=filePart.getSubmittedFileName();
+                                        try{
+                                            FileUpload uploaded=utils.setFileUploadFieldValue(objet, fileData, fileName);
+                                            listParams[i]=uploaded;
+                                        }finally{
+                                            fileData.close();
                                         }
-                                        byte[] file=byteOut.toByteArray();
-                                        fileData.close();
-                                        byteOut.close();
-                                        FileUpload uploaded=new FileUpload();
-                                        uploaded.setName(filePart.getSubmittedFileName());
-                                        uploaded.setFile(file);
-                                        listParams[i]=uploaded;
                                     }
                                 }
                                 break;
