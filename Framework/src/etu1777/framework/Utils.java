@@ -14,11 +14,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
-
 import etu1777.framework.annotations.auth;
 import etu1777.framework.annotations.scope;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class Utils {
     public String getCoreURL(String url){
         String[] newUrl=url.split("/");
@@ -33,7 +32,6 @@ public class Utils {
         String nouveau=n.replaceFirst(String.valueOf(n.charAt(0)), String.valueOf(n.charAt(0)).toUpperCase());
         return nouveau;
     }
-    @SuppressWarnings("rawtypes")
     public Class getClassFromName(String type) throws ClassNotFoundException{
         if(type.equals("int")){
             return Integer.class;
@@ -54,7 +52,6 @@ public class Utils {
         }
         return Class.forName(type);
     }
-    @SuppressWarnings("rawtypes")
     public String getParseMethod(Class classe){
         String rep="parse";
         if(classe.getSimpleName().equals("Integer")){
@@ -64,7 +61,6 @@ public class Utils {
         }
         return rep;
     }
-    @SuppressWarnings("rawtypes")
     public Method getMethodeByAnnotation(String annote, String valueAnnote, Class classe) throws Exception{
         HashMap<Method, Annotation> methodes=getAllAnnotedMethods(annote, classe);
         for(Map.Entry<Method,Annotation> entry:methodes.entrySet()){
@@ -74,7 +70,6 @@ public class Utils {
         }
         return null;
     }
-    @SuppressWarnings("rawtypes")
     public LinkedList<Class> getAllPackagesClasses(String path, String packageName) throws ClassNotFoundException{
         File first=new File(path);
         LinkedList<Class> liste=new LinkedList<>();
@@ -92,7 +87,6 @@ public class Utils {
         }
         return liste;
     }
-    @SuppressWarnings("rawtypes")
     public HashMap<Method, Annotation> getAllAnnotedMethods(String annote, Class classe){
         HashMap<Method, Annotation> liste=new HashMap<>();
         Method[] methods=classe.getDeclaredMethods();
@@ -107,7 +101,6 @@ public class Utils {
         }
         return liste;
     }
-    @SuppressWarnings("rawtypes")
     public HashMap<String, Mapping> getAllURLMapping(String path) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
         LinkedList<Class> listeClass=getAllPackagesClasses(path, "");
         HashMap<String, Mapping> listeUrl=new HashMap<>();
@@ -183,10 +176,16 @@ public class Utils {
         }
         return obj;
     }
-    public boolean checkMethod(Method methode, HttpSession session, String role) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+    public boolean checkMethod(Method methode, String status) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
         Annotation annote=methode.getAnnotation(auth.class);
-        if(annote==null||annote.annotationType().getMethod("admin").invoke(annote).equals(session.getAttribute(role))){
+        if(annote==null){
             return true;
+        }
+        String[] autority=(String[]) annote.annotationType().getMethod("admin").invoke(annote);
+        for(String a:autority){
+            if(a.equals(status)){
+                return true;
+            }
         }
         return false;
     }

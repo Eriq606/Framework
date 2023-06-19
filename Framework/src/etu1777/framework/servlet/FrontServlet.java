@@ -1,6 +1,5 @@
 package etu1777.framework.servlet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -14,11 +13,9 @@ import java.util.Map;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import etu1777.framework.FileUpload;
@@ -27,8 +24,8 @@ import etu1777.framework.ModelView;
 import etu1777.framework.Utils;
 import etu1777.framework.exceptions.AuthentificationErrorException;
 
-@WebServlet("/upload")
 @MultipartConfig
+@SuppressWarnings("rawtypes")
 public class FrontServlet extends HttpServlet{
     HashMap<String, Mapping> mappingUrls;
     HashMap<String, Object> singletonClass;
@@ -52,12 +49,14 @@ public class FrontServlet extends HttpServlet{
         Utils utils=new Utils();
         url=utils.getCoreURL(url);
         PrintWriter writer=res.getWriter();
+        writer.println("Mapping urls: ");
         for(Map.Entry<String, Mapping> entry:mappingUrls.entrySet()){
             writer.println(entry.getKey()+": "+entry.getValue());
         }
-        // for(Map.Entry<String, Object> entry:singletonClass.entrySet()){
-        //     writer.println(entry.getKey());
-        // }
+        writer.println("Classes singletons: ");
+        for(Map.Entry<String, Object> entry:singletonClass.entrySet()){
+            writer.println(entry.getKey());
+        }
         if(mappingUrls.containsKey(url)){
             ClassLoader loader=Thread.currentThread().getContextClassLoader();
             String className=mappingUrls.get(url).getClassName();
@@ -65,7 +64,7 @@ public class FrontServlet extends HttpServlet{
             Object objet=utils.instanceObjectSingleton(singletonClass, className, classe);
             Field[] fields=classe.getDeclaredFields();
             for(Field f:fields){
-                Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());
+                Class typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());
                 Method setter=classe.getMethod("set"+utils.majStart(f.getName()), typeClass);
                 utils.setFieldValue(f, typeClass, setter, objet, param);
@@ -86,7 +85,8 @@ public class FrontServlet extends HttpServlet{
 
             Method method_view=utils.getMethodeByAnnotation("urlpattern", url, classe);
             try{
-                boolean authentificate=utils.checkMethod(method_view, req.getSession(), role);
+                String status=req.getSession().getAttribute(role).toString();
+                boolean authentificate=utils.checkMethod(method_view, status);
                 if(authentificate==false){
                     throw new AuthentificationErrorException();
                 }
