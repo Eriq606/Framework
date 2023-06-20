@@ -5,6 +5,7 @@ import java.text.ParseException;
 
 import etu1777.framework.ModelView;
 import etu1777.framework.annotations.annote_param;
+import etu1777.framework.annotations.auth;
 import etu1777.framework.annotations.scope;
 import etu1777.framework.annotations.urlpattern;
 
@@ -41,6 +42,7 @@ public class Emp {
         return model;
     }
     @urlpattern(url="emp-save.dodo")
+    @auth(admin={"admin"})
     public ModelView save(){
         ModelView model=new ModelView();
         model.setView("hello.jsp");

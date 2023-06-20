@@ -1,6 +1,5 @@
 package etu1777.framework.servlet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -14,7 +13,6 @@ import java.util.Map;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,12 +22,14 @@ import etu1777.framework.FileUpload;
 import etu1777.framework.Mapping;
 import etu1777.framework.ModelView;
 import etu1777.framework.Utils;
+import etu1777.framework.exceptions.AuthentificationErrorException;
 
-@WebServlet("/upload")
 @MultipartConfig
+@SuppressWarnings("rawtypes")
 public class FrontServlet extends HttpServlet{
     HashMap<String, Mapping> mappingUrls;
     HashMap<String, Object> singletonClass;
+    String isConnected, role;
     public void init(){
         Utils utils=new Utils();
         try {
@@ -37,6 +37,8 @@ public class FrontServlet extends HttpServlet{
             String singletonAnnote="singleton";
             mappingUrls=utils.getAllURLMapping(classpath);
             singletonClass=utils.getAllSingletonClass(classpath, singletonAnnote);
+            isConnected=getInitParameter("isConnected");
+            role=getInitParameter("role");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -47,9 +49,11 @@ public class FrontServlet extends HttpServlet{
         Utils utils=new Utils();
         url=utils.getCoreURL(url);
         PrintWriter writer=res.getWriter();
-        // for(Map.Entry<String, Mapping> entry:mappingUrls.entrySet()){
-        //     writer.println(entry.getKey()+": "+entry.getValue());
-        // }
+        writer.println("Mapping urls: ");
+        for(Map.Entry<String, Mapping> entry:mappingUrls.entrySet()){
+            writer.println(entry.getKey()+": "+entry.getValue());
+        }
+        writer.println("Classes singletons: ");
         for(Map.Entry<String, Object> entry:singletonClass.entrySet()){
             writer.println(entry.getKey());
         }
@@ -60,95 +64,84 @@ public class FrontServlet extends HttpServlet{
             Object objet=utils.instanceObjectSingleton(singletonClass, className, classe);
             Field[] fields=classe.getDeclaredFields();
             for(Field f:fields){
-                Class<? extends Object> typeClass=utils.getClassFromName(f.getType().getName());
+                Class typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());
                 Method setter=classe.getMethod("set"+utils.majStart(f.getName()), typeClass);
-                if(param!=null){    
-                    if(f.getType().getSimpleName().equals("String")==false){
-                        String parse=utils.getParseMethod(typeClass);
-                        Method parser=typeClass.getMethod(parse, String.class);
-                        setter.invoke(objet, parser.invoke(typeClass, param));
-                    }else{
-                        setter.invoke(objet, param);
-                    }
-                }
+                utils.setFieldValue(f, typeClass, setter, objet, param);
                 if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
                     Part filePart=req.getPart(f.getName());
                     if(filePart!=null&&typeClass.equals(FileUpload.class)){
                         InputStream fileData=filePart.getInputStream();
-                        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+                        String fileName=filePart.getSubmittedFileName();
                         try{
-                            byte[] byteArray=new byte[8192];
-                            int byteRead;
-                            while((byteRead=fileData.read(byteArray))!=-1){
-                                byteOut.write(byteArray, 0, byteRead);
-                            }
-                            byte[] file=byteOut.toByteArray();
-                            FileUpload uploaded=new FileUpload();
-                            uploaded.setName(filePart.getSubmittedFileName());
-                            uploaded.setFile(file);
-                            setter.invoke(objet, uploaded);
+                            FileUpload file=utils.setFileUploadFieldValue(objet, fileData, fileName);
+                            setter.invoke(objet, file);
                         }finally{
                             fileData.close();
-                            byteOut.close();
                         }
                     }
                 }
             }
 
             Method method_view=utils.getMethodeByAnnotation("urlpattern", url, classe);
-            Parameter[] params=method_view.getParameters();
-            ModelView view=null;
-            if(params.length>0){
-                Object[] listParams=new Object[params.length];
-                for(int i=0; i<params.length; i++){
-                    Annotation[] annotes=params[i].getAnnotations();
-                    listParams[i]=null;
-                    for(Annotation a:annotes){
-                        if(a.annotationType().getSimpleName().equals("annote_param")){
-                            String req_param=req.getParameter(a.annotationType().getMethod("value").invoke(a).toString());
-                            if(req_param!=null){
-                                Class class_param=utils.getClassFromName(params[i].getType().getName());
-                                if(class_param.getSimpleName().equals("String")==false){
-                                    String parse=utils.getParseMethod(class_param);
-                                    Method parser=class_param.getMethod(parse, String.class);
-                                    listParams[i]=parser.invoke(class_param, req_param);
-                                }else{
-                                    listParams[i]=req_param;
+            try{
+                Object status=req.getSession().getAttribute(role);
+                Object connect=req.getSession().getAttribute(isConnected);
+                String status_String="";
+                boolean connecte=false;
+                if(status!=null&&connect!=null){
+                    status_String=status.toString();
+                    connecte=(boolean)connect;
+                }
+                boolean authentificate=utils.checkMethod(method_view, status_String, connecte);
+                if(authentificate==false){
+                    throw new AuthentificationErrorException();
+                }
+                Parameter[] params=method_view.getParameters();
+                ModelView view=null;
+                if(params.length>0){
+                    Object[] listParams=new Object[params.length];
+                    for(int i=0; i<params.length; i++){
+                        Annotation[] annotes=params[i].getAnnotations();
+                        listParams[i]=null;
+                        for(Annotation a:annotes){
+                            if(a.annotationType().getSimpleName().equals("annote_param")){
+                                String req_param=req.getParameter(a.annotationType().getMethod("value").invoke(a).toString());
+                                if(req_param!=null){
+                                    utils.addMethodParameterValue(params[i], listParams, i, req_param);
                                 }
-                            }
-                            if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
-                                Part filePart=req.getPart(a.annotationType().getMethod("value").invoke(a).toString());
-                                if(filePart!=null){
-                                    InputStream fileData=filePart.getInputStream();
-                                    ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
-                                    byte[] byteArray=new byte[8192];
-                                    int byteRead;
-                                    while((byteRead=fileData.read(byteArray))!=-1){
-                                        byteOut.write(byteArray, 0, byteRead);
+                                if(req.getContentType()!=null&&req.getContentType().startsWith("multipart/")){
+                                    Part filePart=req.getPart(a.annotationType().getMethod("value").invoke(a).toString());
+                                    if(filePart!=null){
+                                        InputStream fileData=filePart.getInputStream();
+                                        String fileName=filePart.getSubmittedFileName();
+                                        try{
+                                            FileUpload uploaded=utils.setFileUploadFieldValue(objet, fileData, fileName);
+                                            listParams[i]=uploaded;
+                                        }finally{
+                                            fileData.close();
+                                        }
                                     }
-                                    byte[] file=byteOut.toByteArray();
-                                    fileData.close();
-                                    byteOut.close();
-                                    FileUpload uploaded=new FileUpload();
-                                    uploaded.setName(filePart.getSubmittedFileName());
-                                    uploaded.setFile(file);
-                                    listParams[i]=uploaded;
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
+                    view=(ModelView)(method_view.invoke(objet, listParams));
+                }else if(params.length==0){
+                    view=(ModelView)(method_view.invoke(objet));
                 }
-                view=(ModelView)(method_view.invoke(objet, listParams));
-            }else if(params.length==0){
-                view=(ModelView)(method_view.invoke(objet));
+                for(Map.Entry<String, Object> entry:view.getData().entrySet()){
+                    req.setAttribute(entry.getKey(), entry.getValue());
+                }
+                for(Map.Entry<String, Object> entry:view.getSession().entrySet()){
+                    req.getSession().setAttribute(entry.getKey(), entry.getValue());
+                }
+                RequestDispatcher dispat=req.getRequestDispatcher(view.getView());
+                dispat.forward(req, res);
+            }catch(AuthentificationErrorException e){
+                throw e;
             }
-            for(Map.Entry<String, Object> entry:view.getData().entrySet()){
-                req.setAttribute(entry.getKey(), entry.getValue());
-            }
-            RequestDispatcher dispat=req.getRequestDispatcher(view.getView());
-            dispat.forward(req, res);
         }else{
             writer.println("URL introuvable");
         }
