@@ -85,8 +85,15 @@ public class FrontServlet extends HttpServlet{
 
             Method method_view=utils.getMethodeByAnnotation("urlpattern", url, classe);
             try{
-                String status=req.getSession().getAttribute(role).toString();
-                boolean authentificate=utils.checkMethod(method_view, status);
+                Object status=req.getSession().getAttribute(role);
+                Object connect=req.getSession().getAttribute(isConnected);
+                String status_String="";
+                boolean connecte=false;
+                if(status!=null&&connect!=null){
+                    status_String=status.toString();
+                    connecte=(boolean)connect;
+                }
+                boolean authentificate=utils.checkMethod(method_view, status_String, connecte);
                 if(authentificate==false){
                     throw new AuthentificationErrorException();
                 }

@@ -176,10 +176,13 @@ public class Utils {
         }
         return obj;
     }
-    public boolean checkMethod(Method methode, String status) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+    public boolean checkMethod(Method methode, String status, boolean connecte) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
         Annotation annote=methode.getAnnotation(auth.class);
         if(annote==null){
             return true;
+        }
+        if(connecte==false){
+            return false;
         }
         String[] autority=(String[]) annote.annotationType().getMethod("admin").invoke(annote);
         for(String a:autority){

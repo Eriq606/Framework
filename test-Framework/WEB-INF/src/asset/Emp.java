@@ -31,7 +31,6 @@ public class Emp {
         nom=n;
     }
     @urlpattern(url = "huhu.dodo")
-    @auth(admin="anonyme")
     public ModelView bidon() throws ParseException{
         ModelView model=new ModelView();
         model.setView("hello.jsp");
@@ -43,7 +42,7 @@ public class Emp {
         return model;
     }
     @urlpattern(url="emp-save.dodo")
-    @auth(admin="admin")
+    @auth(admin={"admin"})
     public ModelView save(){
         ModelView model=new ModelView();
         model.setView("hello.jsp");
@@ -53,7 +52,6 @@ public class Emp {
         return model;
     }
     @urlpattern(url="find-by-id.dodo")
-    @auth(admin="anonyme")
     public ModelView findById(@annote_param("id") int ID,@annote_param("nom") String nom) throws ParseException{
         ModelView model=new ModelView();
         model.setView("details.jsp");
