@@ -230,4 +230,12 @@ public class Utils {
             listParams[i]=req_param;
         }
     }
+    public boolean validField(Field[] classe, String fieldName){
+        for(Field f:classe){
+            if(f.getName().equals(fieldName)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

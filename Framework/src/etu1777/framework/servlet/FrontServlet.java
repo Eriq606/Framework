@@ -7,6 +7,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +64,16 @@ public class FrontServlet extends HttpServlet{
             Class<? extends Object > classe=loader.loadClass(className);
             Object objet=utils.instanceObjectSingleton(singletonClass, className, classe);
             Field[] fields=classe.getDeclaredFields();
+            boolean field_session=utils.validField(fields, "session");
+            if(field_session){
+                HashMap<String, Object> sessAttributes=new HashMap<>();
+                Enumeration<String> attrSession=req.getSession().getAttributeNames();
+                while(attrSession.hasMoreElements()){
+                    String attribute=attrSession.nextElement();
+                    sessAttributes.put(attribute, req.getSession().getAttribute(attribute));
+                }
+                classe.getMethod("setSession", HashMap.class).invoke(objet,sessAttributes);
+            }
             for(Field f:fields){
                 Class typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());

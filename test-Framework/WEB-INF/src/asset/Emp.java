@@ -1,5 +1,6 @@
 package asset;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.text.ParseException;
 
@@ -13,6 +14,13 @@ import etu1777.framework.annotations.urlpattern;
 public class Emp {
     private int id;
     private String nom;
+    private HashMap<String, Object> session;
+    public HashMap<String, Object> getSession() {
+        return session;
+    }
+    public void setSession(HashMap<String, Object> session) {
+        this.session = session;
+    }
     public int getId() {
         return id;
     }
@@ -38,6 +46,7 @@ public class Emp {
         l.add(new Emp(1, "Jean"));
         l.add(new Emp(2, "Marie"));
         l.add(new Emp(3, "Jules"));
+        l.add(new Emp((int)getSession().get("id"), (String)getSession().get("nom")));
         model.addItem("lst", l);
         return model;
     }
