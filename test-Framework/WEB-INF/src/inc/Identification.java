@@ -19,6 +19,8 @@ public class Identification {
             modele.addSessionAttribute("estConnecte", false);
             modele.addSessionAttribute("role", "anonyme");
         }
+        modele.addSessionAttribute("id", 6);
+        modele.addSessionAttribute("nom", "SessionName");
         return modele;
     }
 }
