@@ -145,6 +145,10 @@ public class FrontServlet extends HttpServlet{
                 for(Map.Entry<String, Object> entry:view.getData().entrySet()){
                     req.setAttribute(entry.getKey(), entry.getValue());
                 }
+                if(view.isJson()){
+                    System.out.println("Voila:");
+                    System.out.println(utils.modelviewDataToJSON(view.getData()));
+                }
                 for(Map.Entry<String, Object> entry:view.getSession().entrySet()){
                     req.getSession().setAttribute(entry.getKey(), entry.getValue());
                 }

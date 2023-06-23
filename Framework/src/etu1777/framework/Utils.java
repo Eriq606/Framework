@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import etu1777.framework.annotations.auth;
 import etu1777.framework.annotations.scope;
 
@@ -237,5 +240,12 @@ public class Utils {
             }
         }
         return false;
+    }
+    public String modelviewDataToJSON(HashMap<String, Object> hash){
+        String json="null";
+        GsonBuilder builder=new GsonBuilder();
+        Gson gson=builder.create();
+        json=gson.toJson(hash);
+        return json;
     }
 }
