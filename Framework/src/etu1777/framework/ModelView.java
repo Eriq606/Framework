@@ -10,6 +10,7 @@ public class ModelView{
     public ModelView(){
         data=new HashMap<String, Object>();
         session=new HashMap<String, Object>();
+        setJson(false);
     }
     public HashMap<String, Object> getSession() {
         return session;

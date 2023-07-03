@@ -7,7 +7,9 @@ import java.text.ParseException;
 import etu1777.framework.ModelView;
 import etu1777.framework.annotations.annote_param;
 import etu1777.framework.annotations.auth;
+import etu1777.framework.annotations.json;
 import etu1777.framework.annotations.scope;
+import etu1777.framework.annotations.session;
 import etu1777.framework.annotations.urlpattern;
 
 @scope("singleton")
@@ -39,6 +41,7 @@ public class Emp {
         nom=n;
     }
     @urlpattern(url = "huhu.dodo")
+    @session
     public ModelView bidon() throws ParseException{
         ModelView model=new ModelView();
         model.setView("hello.jsp");
@@ -48,7 +51,6 @@ public class Emp {
         l.add(new Emp(3, "Jules"));
         l.add(new Emp((int)getSession().get("id"), (String)getSession().get("nom")));
         model.addItem("lst", l);
-        model.setJson(true);
         return model;
     }
     @urlpattern(url="emp-save.dodo")
@@ -62,6 +64,7 @@ public class Emp {
         return model;
     }
     @urlpattern(url="find-by-id.dodo")
+    @json
     public ModelView findById(@annote_param("id") int ID,@annote_param("nom") String nom) throws ParseException{
         ModelView model=new ModelView();
         model.setView("details.jsp");

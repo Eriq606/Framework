@@ -23,6 +23,7 @@ import etu1777.framework.FileUpload;
 import etu1777.framework.Mapping;
 import etu1777.framework.ModelView;
 import etu1777.framework.Utils;
+import etu1777.framework.annotations.json;
 import etu1777.framework.annotations.session;
 import etu1777.framework.exceptions.AuthentificationErrorException;
 
@@ -97,6 +98,7 @@ public class FrontServlet extends HttpServlet{
                     }
                     classe.getMethod("setSession", HashMap.class).invoke(objet,sessAttributes);
                 }
+                Annotation annotationJson=method_view.getAnnotation(json.class);
                 Object status=req.getSession().getAttribute(role);
                 Object connect=req.getSession().getAttribute(isConnected);
                 String status_String="";
@@ -147,7 +149,11 @@ public class FrontServlet extends HttpServlet{
                     req.setAttribute(entry.getKey(), entry.getValue());
                 }
                 if(view.isJson()){
-                    System.out.println("Voila:");
+                    System.out.println("Voila (attribut modelview IsJson):");
+                    System.out.println(utils.modelviewDataToJSON(view.getData()));
+                }
+                if(annotationJson!=null){
+                    System.out.println("Voila (annotation JSON):");
                     System.out.println(utils.modelviewDataToJSON(view.getData()));
                 }
                 for(Map.Entry<String, Object> entry:view.getSession().entrySet()){
