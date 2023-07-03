@@ -6,6 +6,7 @@ public class ModelView{
     private String view;
     private HashMap<String, Object> data;
     private HashMap<String, Object> session;
+    private boolean isJson;
     public ModelView(){
         data=new HashMap<String, Object>();
         session=new HashMap<String, Object>();
@@ -37,4 +38,11 @@ public class ModelView{
     public void addItem(String key, Object value){
         data.put(key, value);
     }
+    public boolean isJson() {
+        return isJson;
+    }
+    public void setJson(boolean isJson) {
+        this.isJson = isJson;
+    }
+    
 }

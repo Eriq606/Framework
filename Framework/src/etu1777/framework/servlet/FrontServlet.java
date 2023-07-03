@@ -23,6 +23,7 @@ import etu1777.framework.FileUpload;
 import etu1777.framework.Mapping;
 import etu1777.framework.ModelView;
 import etu1777.framework.Utils;
+import etu1777.framework.annotations.session;
 import etu1777.framework.exceptions.AuthentificationErrorException;
 
 @MultipartConfig
@@ -64,16 +65,6 @@ public class FrontServlet extends HttpServlet{
             Class<? extends Object > classe=loader.loadClass(className);
             Object objet=utils.instanceObjectSingleton(singletonClass, className, classe);
             Field[] fields=classe.getDeclaredFields();
-            boolean field_session=utils.validField(fields, "session");
-            if(field_session){
-                HashMap<String, Object> sessAttributes=new HashMap<>();
-                Enumeration<String> attrSession=req.getSession().getAttributeNames();
-                while(attrSession.hasMoreElements()){
-                    String attribute=attrSession.nextElement();
-                    sessAttributes.put(attribute, req.getSession().getAttribute(attribute));
-                }
-                classe.getMethod("setSession", HashMap.class).invoke(objet,sessAttributes);
-            }
             for(Field f:fields){
                 Class typeClass=utils.getClassFromName(f.getType().getName());
                 String param=req.getParameter(f.getName());
@@ -96,6 +87,16 @@ public class FrontServlet extends HttpServlet{
 
             Method method_view=utils.getMethodeByAnnotation("urlpattern", url, classe);
             try{
+                Annotation annotationSession=method_view.getAnnotation(session.class);
+                if(annotationSession!=null){
+                    HashMap<String, Object> sessAttributes=new HashMap<>();
+                    Enumeration<String> attrSession=req.getSession().getAttributeNames();
+                    while(attrSession.hasMoreElements()){
+                        String attribute=attrSession.nextElement();
+                        sessAttributes.put(attribute, req.getSession().getAttribute(attribute));
+                    }
+                    classe.getMethod("setSession", HashMap.class).invoke(objet,sessAttributes);
+                }
                 Object status=req.getSession().getAttribute(role);
                 Object connect=req.getSession().getAttribute(isConnected);
                 String status_String="";
@@ -144,6 +145,10 @@ public class FrontServlet extends HttpServlet{
                 }
                 for(Map.Entry<String, Object> entry:view.getData().entrySet()){
                     req.setAttribute(entry.getKey(), entry.getValue());
+                }
+                if(view.isJson()){
+                    System.out.println("Voila:");
+                    System.out.println(utils.modelviewDataToJSON(view.getData()));
                 }
                 for(Map.Entry<String, Object> entry:view.getSession().entrySet()){
                     req.getSession().setAttribute(entry.getKey(), entry.getValue());

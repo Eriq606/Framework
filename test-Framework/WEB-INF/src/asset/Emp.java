@@ -48,6 +48,7 @@ public class Emp {
         l.add(new Emp(3, "Jules"));
         l.add(new Emp((int)getSession().get("id"), (String)getSession().get("nom")));
         model.addItem("lst", l);
+        model.setJson(true);
         return model;
     }
     @urlpattern(url="emp-save.dodo")
