@@ -1,15 +1,18 @@
 package etu1777.framework;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class ModelView{
     private String view;
     private HashMap<String, Object> data;
     private HashMap<String, Object> session;
+    private LinkedList<String> deleteSession;
     private boolean isJson;
     public ModelView(){
         data=new HashMap<String, Object>();
         session=new HashMap<String, Object>();
+        deleteSession=new LinkedList<>();
         setJson(false);
     }
     public HashMap<String, Object> getSession() {
@@ -23,6 +26,9 @@ public class ModelView{
     }
     public HashMap<String, Object> getData() {
         return data;
+    }
+    public void addSessionToDelete(String delete){
+        deleteSession.add(delete);
     }
 
     public void setData(HashMap<String, Object> data) {
@@ -44,6 +50,12 @@ public class ModelView{
     }
     public void setJson(boolean isJson) {
         this.isJson = isJson;
+    }
+    public LinkedList<String> getDeleteSession() {
+        return deleteSession;
+    }
+    public void setDeleteSession(LinkedList<String> deleteSession) {
+        this.deleteSession = deleteSession;
     }
     
 }
