@@ -90,6 +90,21 @@ les valeurs sont directement accessibles dans la methode controller cible du for
             ...
         }
 
+## Methodes controller
+- les arguments à definir a partir des parametres de requetes doivent être annotées par @annote_param
+- le nom des champs ou parametres de requetes doit etre egal au parametre correspondant
+
+### Vue.jsp
+
+    <a href="/projet/findid?id=5&nom=jean">Lien</a>
+
+### Methode controller
+
+    @urlpattern(url="findid")
+    ModelView findById(@annote_param("id") int id, @annote_param("nom") String nom){
+        ...
+    }
+
 ## Pre-requis 
 - Java 8+
 - Windows / Linux

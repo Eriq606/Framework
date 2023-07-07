@@ -159,6 +159,9 @@ public class FrontServlet extends HttpServlet{
                 for(Map.Entry<String, Object> entry:view.getSession().entrySet()){
                     req.getSession().setAttribute(entry.getKey(), entry.getValue());
                 }
+                for(String s:view.getDeleteSession()){
+                    req.getSession().removeAttribute(s);
+                }
                 RequestDispatcher dispat=req.getRequestDispatcher(view.getView());
                 dispat.forward(req, res);
             }catch(AuthentificationErrorException e){
